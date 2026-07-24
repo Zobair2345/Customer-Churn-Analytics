@@ -126,3 +126,113 @@ WHERE contract = 'Month-to-month'
   AND tenure <= 12
   AND internetservice = 'Fiber optic'
   AND paymentmethod = 'Electronic check';
+
+  -- 12. Customers Paying Above Average Monthly Charges
+
+SELECT
+    COUNT(*) AS customers_above_average
+FROM customers
+WHERE monthlycharges >
+(
+    SELECT AVG(monthlycharges)
+    FROM customers
+);
+
+-- 13. Top 10 Longest-Tenure Customers
+
+SELECT
+    customerid,
+    tenure,
+    monthlycharges,
+    contract
+FROM customers
+ORDER BY tenure DESC
+LIMIT 10;
+
+-- 10. Contract and Internet Service Combination vs Churn
+
+SELECT
+    contract,
+    internetservice,
+    COUNT(*) AS total_customers,
+    COUNT(*) FILTER (
+        WHERE churn = 'Yes'
+    ) AS churned_customers,
+    ROUND(
+        COUNT(*) FILTER (WHERE churn = 'Yes') * 100.0
+        / COUNT(*),
+        2
+    ) AS churn_rate
+FROM customers
+GROUP BY contract, internetservice
+ORDER BY churn_rate DESC;
+-- 11. Payment Method and Contract Combination vs Churn
+
+SELECT
+    paymentmethod,
+    contract,
+    COUNT(*) AS total_customers,
+
+    COUNT(*) FILTER (
+        WHERE churn = 'Yes'
+    ) AS churned_customers,
+
+    ROUND(
+        COUNT(*) FILTER (WHERE churn = 'Yes') * 100.0
+        / COUNT(*),
+        2
+    ) AS churn_rate
+
+FROM customers
+
+GROUP BY paymentmethod, contract
+
+ORDER BY churn_rate DESC;
+-- 12. Customers Paying Above Average Monthly Charges
+
+SELECT
+    COUNT(*) AS customers_above_average
+FROM customers
+WHERE monthlycharges >
+(
+    SELECT AVG(monthlycharges)
+    FROM customers
+);
+
+-- 13. Top 10 Longest-Tenure Customers
+
+SELECT
+    customerid,
+    tenure,
+    monthlycharges,
+    contract
+FROM customers
+ORDER BY tenure DESC
+LIMIT 10;
+
+
+-- 14. Customer Summary View
+
+CREATE VIEW customer_summary AS
+
+SELECT
+    customerid,
+    contract,
+    internetservice,
+    paymentmethod,
+    tenure,
+    monthlycharges,
+    churn
+FROM customers;
+
+-- ============================================
+-- Key Business Insights
+-- ============================================
+
+-- Overall churn rate: 26.54%
+-- Month-to-month contracts have the highest churn.
+-- Fiber optic customers churn more than DSL customers.
+-- Electronic check customers have the highest churn rate.
+-- Customers with tenure <= 12 months are most likely to churn.
+-- High-risk segment (Month-to-month + Fiber optic + Electronic check + Tenure <=12)
+-- contains 631 customers with a churn rate of 71.16%.
